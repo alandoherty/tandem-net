@@ -49,6 +49,9 @@ namespace Tandem.Managers
             if (_disposed == 1)
                 throw new ObjectDisposedException("The lock manager has been disposed");
 
+            if (!resourceUri.Scheme.Equals("tandem", StringComparison.CurrentCultureIgnoreCase))
+                throw new FormatException("The protocol scheme must be tandem");
+
             // query the lock
             RedisValue value = await _database.LockQueryAsync($"tandem.{resourceUri.ToString()}");
 
@@ -76,6 +79,9 @@ namespace Tandem.Managers
         public async Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan)) {
             if (_disposed == 1)
                 throw new ObjectDisposedException("The lock manager has been disposed");
+
+            if (!resourceUri.Scheme.Equals("tandem", StringComparison.CurrentCultureIgnoreCase))
+                throw new FormatException("The protocol scheme must be tandem");
 
             // generate random token
             LockToken token = new LockToken(Guid.NewGuid(), _owner);

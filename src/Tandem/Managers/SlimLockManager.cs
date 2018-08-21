@@ -39,6 +39,9 @@ namespace Tandem.Managers
         /// <param name="waitTime">The wait time.</param>
         /// <returns></returns>
         public async Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan)) {
+            if (!resourceUri.Scheme.Equals("tandem", StringComparison.CurrentCultureIgnoreCase))
+                throw new FormatException("The protocol scheme must be tandem");
+
             lock (_handles) {
                 SlimLockHandle handle = _handles.SingleOrDefault(h => h.ResourceURI.ToString().Equals(resourceUri.ToString(), StringComparison.CurrentCultureIgnoreCase));
 
@@ -171,7 +174,10 @@ namespace Tandem.Managers
         /// <param name="resourceUri">The resource URI.</param>
         /// <returns>If the resource URI is locked.</returns>
         public Task<LockToken> QueryAsync(Uri resourceUri) {
-            lock(_handles) {
+            if (!resourceUri.Scheme.Equals("tandem", StringComparison.CurrentCultureIgnoreCase))
+                throw new FormatException("The protocol scheme must be tandem");
+
+            lock (_handles) {
                 SlimLockHandle handle =  _handles.SingleOrDefault(h => h.ResourceURI.ToString().Equals(resourceUri.ToString(), StringComparison.CurrentCultureIgnoreCase));
 
                 if (handle == null)
