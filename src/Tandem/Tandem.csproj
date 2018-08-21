@@ -13,7 +13,7 @@
     <PackageLicenseUrl>https://github.com/alandoherty/tandem-net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/alandoherty/tandem-net</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageIconUrl>https://raw.githubusercontent.com/alandoherty/tandem-net/master/img/logo.png?raw=true</PackageIconUrl>
+    <PackageIconUrl>https://s3-eu-west-1.amazonaws.com/assets.alandoherty.co.uk/github/tandem-net-nuget.png</PackageIconUrl>
   </PropertyGroup>
 
 </Project>
