@@ -20,7 +20,6 @@ namespace Tandem
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The maximum amount of time to wait, not supported by every lock manager.</param>
-        /// <exception cref="TimeoutException">The lock could not be obtained within the wait time.</exception>
         /// <returns>The lock handle or null if the lock could not be obtained instantly.</returns>
         Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan));
 
@@ -29,23 +28,22 @@ namespace Tandem
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The maximum amount of time to wait, not supported by every lock manager.</param>
-        /// <exception cref="TimeoutException">The lock could not be obtained within the wait time.</exception>
         /// <returns>The lock handle or null if the lock could not be obtained instantly.</returns>
         Task<ILockHandle> LockAsync(string resourceUri, TimeSpan waitTime = default(TimeSpan));
 
         /// <summary>
-        /// Gets if the resource is locked.
+        /// Queries the provided resource URI for a lock.
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <returns>If the resource URI is locked.</returns>
-        Task<bool> IsLockedAsync(Uri resourceUri);
+        Task<LockToken> QueryAsync(Uri resourceUri);
 
         /// <summary>
-        /// Gets if the resource is locked.
+        /// Queries the provided resource URI for a lock.
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <returns>If the resource URI is locked.</returns>
-        Task<bool> IsLockedAsync(string resourceUri);
+        Task<LockToken> QueryAsync(string resourceUri);
 
         /// <summary>
         /// Releases the specified resource lock.

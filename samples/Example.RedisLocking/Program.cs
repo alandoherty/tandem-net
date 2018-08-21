@@ -15,7 +15,7 @@ namespace Example.RedisLocking
 
         static async Task MainAsync(string[] args) {
             ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
-            ILockManager manager = new RedisLockManager(connectionMultiplexer);
+            ILockManager manager = new RedisLockManager(connectionMultiplexer, "MyServer");
 
             A1(manager);
             A2(manager);
@@ -27,7 +27,7 @@ namespace Example.RedisLocking
 
         static async void A1(ILockManager manager) {
             using (var h = await manager.LockAsync("tandem://devices/wow")) {
-                await Task.Delay(2000);
+                await Task.Delay(100000000);
             }
         }
 
@@ -36,8 +36,10 @@ namespace Example.RedisLocking
             await Task.Delay(1000);
 
             // check if it's locked
-            if (await manager.IsLockedAsync("tandem://devices/Wow"))
-                Console.WriteLine("It's locked!");
+            LockToken existingLock = await manager.QueryAsync("tandem://devices/wow");
+
+            if (existingLock.IsValid)
+                Console.WriteLine($"It's locked by '{existingLock.Owner}'");
 
             // now try and obtain a lock
             await Task.Delay(2000);

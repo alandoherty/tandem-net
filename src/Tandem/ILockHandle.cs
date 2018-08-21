@@ -35,6 +35,11 @@ namespace Tandem
         Uri ResourceURI { get; }
 
         /// <summary>
+        /// Gets the lock token.
+        /// </summary>
+        LockToken Token { get; }
+
+        /// <summary>
         /// Represents an event called when the lock is invalidated.
         /// </summary>
         event EventHandler<LockInvalidatedEventArgs> Invalidated;

@@ -13,17 +13,33 @@ namespace Tandem.Managers
         private ILockManager _manager;
         private SemaphoreSlim _validSemaphore = new SemaphoreSlim(0, 1);
 
-        public DateTime ExpiresAt { get; } = DateTime.MaxValue;
+        /// <summary>
+        /// Gets when this lock expires.
+        /// </summary>
+        public DateTime ExpiresAt { get; internal set; } = DateTime.MaxValue;
 
-        public DateTime RefreshedAt { get; } = DateTime.UtcNow;
+        /// <summary>
+        /// Gets when the lock was last refreshed.
+        /// </summary>
+        public DateTime RefreshedAt { get; internal set; } = DateTime.UtcNow;
 
-        public bool IsValid { get; internal set; }
+        /// <summary>
+        /// Gets if the lock handle is still valid.
+        /// </summary>
+        public bool IsValid {
+            get {
+                return ExpiresAt < DateTime.UtcNow;
+            }
+        }
 
         /// <summary>
         /// Gets the lock token.
         /// </summary>
-        public string Token { get; internal set; }
+        public LockToken Token { get; internal set; }
 
+        /// <summary>
+        /// Gets the lock manager for this handle.
+        /// </summary>
         public ILockManager Manager {
             get {
                 return _manager;
@@ -34,18 +50,23 @@ namespace Tandem.Managers
         /// Gets the resource URI.
         /// </summary>
         public Uri ResourceURI { get; internal set; }
-
+        
+        /// <summary>
+        /// Invoked when the lock is invalidated.
+        /// </summary>
         public event EventHandler<LockInvalidatedEventArgs> Invalidated;
 
         internal void OnInvalidated(object sender, LockInvalidatedEventArgs e) {
             // invalidate
             Invalidated?.Invoke(sender, e);
-            IsValid = false;
 
             // release the valid semaphore
             _validSemaphore.Release();
         }
 
+        /// <summary>
+        /// Disposes the lock by releasing it.
+        /// </summary>
         public void Dispose() {
             Action releaseAction = async () => await _manager.ReleaseAsync(this);
             releaseAction();

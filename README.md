@@ -36,20 +36,41 @@ The library includes a basic implementation of `ILockManager` named `ProcessLock
 ```csharp
 ILockManager manager = new ProcessLockManager();
 
-try {
-	using (var handle = await manager.LockAsync("tandem://alan/balance", TimeSpan.FromSeconds(5))) {
-		// do something involving alan's bank balance
-	}
-} catch(TimeoutException tex) {
-	Console.WriteLine($"Failed to obtain lock: {tex}");
+using (var handle = await manager.LockAsync("tandem://alan/balance", TimeSpan.FromSeconds(5))) {
+	if (handle == null)
+		return;
+	
+	// do something involving alan's bank balance
 }
 ```
 
-When the time comes to begin testing multiple components of the system you can switch to the capable `RedisLockManager`, which relies on atomic operations within Redis to perform distributed locking.
+When the time comes to begin testing multiple components of the system you can switch to the capable `RedisLockManager`, which relies on atomic operations within Redis to perform distributed locking. The manager will manage refreshing tokens for you.
 
-The manager is fault tolerant and in best conditions locks will be kept for as little time as possible. In worst conditions locks may remain until they expire after 60 seconds, and locks may be invalidated externally. You can listen for these situations by attaching an event handler to `ILockHandle.Invalidated`.
+The manager is fault tolerant and in best conditions locks will be kept for as little time as possible. In worst conditions locks may remain until they expire after 60 seconds, this may cause delays in your system but you can be guarenteed that the sanctity of your lock remains.
 
 If connection is lost to Redis the manager assumes the lock is valid until expiry, so as long as Redis does not forget the lock exists and your code responsibly checks that the lock is still valid you should encounter no issues.
+
+### Lock Tokens
+
+The library provides basic lock querying support, this is particularly useful for Redis where knowing the owner of a lock is useful to tracking down deadlocks/bugs.
+
+```csharp
+ILockManager manager = new RedisLockManager(connectionMultiplexer, "MyOwnerIDFormat");
+
+using (var handle = await manager.LockAsync("tandem://alan/balance", TimeSpan.FromSeconds(5))) {
+	if (handle == null) {
+		LockToken existingLock = await manager.QueryAsync("tandem://alan/balance");
+		
+		// technically the lock could be invalidated inbetween LockAsync and QueryAsync so check once more
+		if (existingLock.IsValid) {	
+			Console.WriteLine($"Cannot lock down Alan, he's already locked by: {existingLock.Owner}");
+			return;
+		}
+	}
+	
+	// do something involving alan's bank balance
+}
+```
 
 ## Resources
 

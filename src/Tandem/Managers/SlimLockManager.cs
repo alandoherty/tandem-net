@@ -12,9 +12,15 @@ namespace Tandem.Managers
     /// </summary>
     public class SlimLockManager : ILockManager
     {
+        #region Fields
         private List<SlimLockHandle> _handles = new List<SlimLockHandle>();
         private Dictionary<string, List<TaskCompletionSource<ILockHandle>>> _lockQueues = new Dictionary<string, List<TaskCompletionSource<ILockHandle>>>();
+        #endregion
 
+        #region Properties
+        /// <summary>
+        /// Gets or sets the default expiry for locks.
+        /// </summary>
         public TimeSpan ExpirySpan {
             get {
                 return Timeout.InfiniteTimeSpan;
@@ -23,7 +29,9 @@ namespace Tandem.Managers
                 throw new InvalidOperationException("The expiry time for process locks is infinite");
             }
         }
+        #endregion
 
+        #region Methods
         /// <summary>
         /// Locks a resource.
         /// </summary>
@@ -42,7 +50,8 @@ namespace Tandem.Managers
                     // fall through
                 } else {
                     handle = new SlimLockHandle(this) {
-                        ResourceURI = resourceUri
+                        ResourceURI = resourceUri,
+                        Token = new LockToken(Guid.NewGuid(), null)
                     };
 
                     _handles.Add(handle);
@@ -85,7 +94,7 @@ namespace Tandem.Managers
                         return handleTaskSource.Task.Result;
                 }
 
-                throw new TimeoutException("The lock could not be obtained within the timeout");
+                return null;
             } else {
                 return handleTaskSource.Task.Result;
             }
@@ -126,7 +135,8 @@ namespace Tandem.Managers
 
                         // create our handle
                         SlimLockHandle newHandle = new SlimLockHandle(this) {
-                            ResourceURI = handle.ResourceURI
+                            ResourceURI = handle.ResourceURI,
+                            Token = new LockToken(Guid.NewGuid(), null)
                         };
 
                         _handles.Add(newHandle);
@@ -160,9 +170,14 @@ namespace Tandem.Managers
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <returns>If the resource URI is locked.</returns>
-        public Task<bool> IsLockedAsync(Uri resourceUri) {
+        public Task<LockToken> QueryAsync(Uri resourceUri) {
             lock(_handles) {
-                return Task.FromResult(_handles.Any(h => h.ResourceURI.ToString().Equals(resourceUri.ToString(), StringComparison.CurrentCultureIgnoreCase)));
+                SlimLockHandle handle =  _handles.SingleOrDefault(h => h.ResourceURI.ToString().Equals(resourceUri.ToString(), StringComparison.CurrentCultureIgnoreCase));
+
+                if (handle == null)
+                    return Task.FromResult(default(LockToken));
+                else
+                    return Task.FromResult(handle.Token);
             }
         }
 
@@ -171,11 +186,10 @@ namespace Tandem.Managers
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <returns>If the resource URI is locked.</returns>
-        public Task<bool> IsLockedAsync(string resourceUri) {
-            lock (_handles) {
-                return Task.FromResult(_handles.Any(h => h.ResourceURI.ToString().Equals(resourceUri.ToString(), StringComparison.CurrentCultureIgnoreCase)));
-            }
+        public Task<LockToken> QueryAsync(string resourceUri) {
+            return QueryAsync(new Uri(resourceUri));
         }
+        #endregion
 
         /// <summary>
         /// Creates an in-process locking manager.

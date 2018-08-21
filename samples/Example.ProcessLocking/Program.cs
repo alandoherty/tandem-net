@@ -33,8 +33,10 @@ namespace Example.ProcessLocking
             await Task.Delay(1000);
 
             // check if it's locked
-            if (await manager.IsLockedAsync("tandem://devices/Wow"))
-                Console.WriteLine("It's locked!");
+            LockToken existingLock = await manager.QueryAsync("tandem://devices/Wow");
+
+            if (existingLock.IsValid)
+                Console.WriteLine($"It's locked by '{existingLock.Owner}'");
 
             // now try and obtain a lock
             await Task.Delay(2000);
