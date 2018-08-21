@@ -67,6 +67,7 @@ namespace Tandem.Managers
         /// <summary>
         /// Disposes the lock by releasing it.
         /// </summary>
+        /// <remarks>It is important to note that this operation does not block, meaning you cannot guarentee that the lock has been fully released when Dispose returns. Use <see cref="RedisLockManager.ReleaseAsync(ILockHandle)"/> instead.</remarks>
         public void Dispose() {
             Action releaseAction = async () => await _manager.ReleaseAsync(this);
             releaseAction();
