@@ -7,7 +7,7 @@ namespace Tandem.Managers
     /// <summary>
     /// Represents a slim lock handle.
     /// </summary>
-    public class SlimLockHandle : ILockHandle, IDisposable
+    public sealed class SlimLockHandle : ILockHandle, IDisposable
     {
         private SlimLockManager _manager = null;
 
@@ -47,17 +47,7 @@ namespace Tandem.Managers
         public LockToken Token { get; internal set; }
         #endregion
 
-        /// <summary>
-        /// Invoked when the lock is invalidated.
-        /// </summary>
-        public event EventHandler<LockInvalidatedEventArgs> Invalidated;
-
         #region Methods
-        internal void OnInvalidated(object sender, LockInvalidatedEventArgs e) {
-            Invalidated?.Invoke(sender, e);
-            IsValid = false;
-        }
-
         /// <summary>
         /// Dispose and release the underlying handle.
         /// </summary>

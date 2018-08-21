@@ -8,7 +8,7 @@ namespace Tandem.Managers
     /// <summary>
     /// Represents a redis lock handle.
     /// </summary>
-    public class RedisLockHandle : ILockHandle
+    public sealed class RedisLockHandle : ILockHandle
     {
         private ILockManager _manager;
         private SemaphoreSlim _validSemaphore = new SemaphoreSlim(0, 1);
@@ -50,19 +50,6 @@ namespace Tandem.Managers
         /// Gets the resource URI.
         /// </summary>
         public Uri ResourceURI { get; internal set; }
-        
-        /// <summary>
-        /// Invoked when the lock is invalidated.
-        /// </summary>
-        public event EventHandler<LockInvalidatedEventArgs> Invalidated;
-
-        internal void OnInvalidated(object sender, LockInvalidatedEventArgs e) {
-            // invalidate
-            Invalidated?.Invoke(sender, e);
-
-            // release the valid semaphore
-            _validSemaphore.Release();
-        }
 
         /// <summary>
         /// Disposes the lock by releasing it.

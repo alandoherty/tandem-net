@@ -10,7 +10,7 @@ namespace Tandem.Managers
     /// <summary>
     /// Provides an in-process locking manager.
     /// </summary>
-    public class SlimLockManager : ILockManager
+    public sealed class SlimLockManager : ILockManager
     {
         #region Fields
         private List<SlimLockHandle> _handles = new List<SlimLockHandle>();
@@ -120,12 +120,6 @@ namespace Tandem.Managers
             }
 
             if (removed) {
-                // invoke event
-                ((SlimLockHandle)handle).OnInvalidated(this, new LockInvalidatedEventArgs() {
-                    Handle = handle,
-                    Reason = LockInvalidatedReason.Released
-                });
-
                 // check if any locks waiting
                 lock(_lockQueues) {
                     // get waiting list or create

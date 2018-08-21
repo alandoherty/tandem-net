@@ -2,19 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Tandem
+namespace Tandem.Managers
 {
     /// <summary>
-    /// Provides event arguments for when a lock expires.
+    /// Provides event arguments for when a lock invalidated by other means.
     /// </summary>
-    public class LockInvalidatedEventArgs
+    public class RedisLockInvalidatedEventArgs
     {
         #region Properties
-        /// <summary>
-        /// Gets the reason the lock was invalidated.
-        /// </summary>
-        public LockInvalidatedReason Reason { get; internal set; }
-
         /// <summary>
         /// Gets the handle for the lock.
         /// </summary>
@@ -24,6 +19,6 @@ namespace Tandem
         /// <summary>
         /// Creates new lock invalidated event arguments.
         /// </summary>
-        public LockInvalidatedEventArgs() { }
+        public RedisLockInvalidatedEventArgs() { }
     }
 }

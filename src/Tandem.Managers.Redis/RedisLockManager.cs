@@ -12,13 +12,15 @@ namespace Tandem.Managers
     /// <summary>
     /// Provides functionality for locking over redis.
     /// </summary>
-    public class RedisLockManager : ILockManager, IDisposable
+    public sealed class RedisLockManager : ILockManager, IDisposable
     {
         #region Fields
         private ConnectionMultiplexer _connectionMultiplexer = null;
         private IDatabase _database;
 
         private TimeSpan _expirySpan = TimeSpan.FromSeconds(60);
+        private TimeSpan _refreshSpan = TimeSpan.FromSeconds(20);
+
         private int _disposed = 0;
         private CancellationTokenSource _disposeCancellation = new CancellationTokenSource();
 
@@ -28,6 +30,17 @@ namespace Tandem.Managers
         private string _owner;
         #endregion
 
+        #region Events
+        /// <summary>
+        /// Invoked when a lock is invalidated by other means.
+        /// </summary>
+        public event EventHandler<RedisLockInvalidatedEventArgs> Invalidated;
+
+        private void OnInvalidated(RedisLockInvalidatedEventArgs e) {
+            Invalidated?.Invoke(this, e);
+        }
+        #endregion
+
         /// <summary>
         /// Gets or sets the default expiry for locks.
         /// </summary>
@@ -35,7 +48,28 @@ namespace Tandem.Managers
             get {
                 return _expirySpan;
             } set {
+                if (_refreshSpan > value)
+                    throw new ArgumentOutOfRangeException("The refresh span cannot be greater than the expiry span");
+
                 _expirySpan = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the default refresh for locks.
+        /// </summary>
+        public TimeSpan RefreshSpan {
+            get {
+                return _refreshSpan;
+            }
+            set {
+                if (_refreshSpan <= TimeSpan.Zero)
+                    throw new ArgumentOutOfRangeException("The refresh span cannot be zero or smaller");
+
+                if (_refreshSpan > _expirySpan)
+                    throw new ArgumentOutOfRangeException("The refresh span cannot be greater than the expiry span");
+
+                _refreshSpan = value;
             }
         }
 
@@ -175,7 +209,7 @@ namespace Tandem.Managers
         private async Task LockExtender() {
             while(!_disposeCancellation.IsCancellationRequested) {
                 // wait
-                await Task.Delay(TimeSpan.FromSeconds(5));
+                await Task.Delay(_refreshSpan);
 
                 // get expiry time
                 TimeSpan expiryTime = _expirySpan;
@@ -222,6 +256,17 @@ namespace Tandem.Managers
                     RedisLockHandle handle = refreshLockHandles[task];
                     DateTime time = refreshLockTimes[task];
 
+                    // ignore faulty refreshes, if it expires eventually we'll catch that too
+                    if (task.IsFaulted) {
+                        // invoke event
+                        try {
+                            OnInvalidated(new RedisLockInvalidatedEventArgs() { Handle = handle } );
+                        } catch (Exception) { }
+
+                        continue;
+                    }
+
+                    // check if we successfully refreshed the handle
                     if (task.Result == true) {
                         handle.RefreshedAt = time;
                         handle.ExpiresAt = time + expiryTime;
