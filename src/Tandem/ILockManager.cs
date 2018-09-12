@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Tandem
@@ -20,16 +21,18 @@ namespace Tandem
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The maximum amount of time to wait, not supported by every lock manager.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The lock handle or null if the lock could not be obtained instantly.</returns>
-        Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan));
+        Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Locks the specified resource.
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The maximum amount of time to wait, not supported by every lock manager.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The lock handle or null if the lock could not be obtained instantly.</returns>
-        Task<ILockHandle> LockAsync(string resourceUri, TimeSpan waitTime = default(TimeSpan));
+        Task<ILockHandle> LockAsync(string resourceUri, TimeSpan waitTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Queries the provided resource URI for a lock.

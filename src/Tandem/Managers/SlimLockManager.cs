@@ -37,8 +37,9 @@ namespace Tandem.Managers
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The wait time.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        public async Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan)) {
+        public async Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken)) {
             if (!resourceUri.Scheme.Equals("tandem", StringComparison.CurrentCultureIgnoreCase))
                 throw new FormatException("The protocol scheme must be tandem");
 
@@ -78,27 +79,41 @@ namespace Tandem.Managers
                 waitingList.Add(handleTaskSource);
             }
 
-            // wait
-            Task waitDelay = Task.Delay(waitTime);
+            // race between the lock and the delay, and optionally a cancellation signal
+            bool timedOut = false, cancelled = false;
+
+            try {
+                Task waitDelay = Task.Delay(waitTime, cancellationToken);
+                timedOut = await Task.WhenAny(waitDelay, handleTaskSource.Task) == waitDelay;
+            } catch (OperationCanceledException) {
+                cancelled = true;
+            }
 
             // race between the delay or the lock being released to us
-            if (await Task.WhenAny(waitDelay, handleTaskSource.Task) == waitDelay) {
+            if (timedOut || cancelled) {
                 lock (_lockQueues) {
                     // get waiting list or create
                     List<TaskCompletionSource<ILockHandle>> waitingList = null;
 
-                    // check if we did actually complete
                     if (!_lockQueues.TryGetValue(resourceUri.ToString(), out waitingList)) {
                         return handleTaskSource.Task.Result;
                     }
 
-                    // check if we did actually complete
+                    // check if we've completed already
                     if (!waitingList.Contains(handleTaskSource))
                         return handleTaskSource.Task.Result;
-                }
+                    else {
+                        // remove from waiting list now
+                        waitingList.Remove(handleTaskSource);
 
-                return null;
+                        if (waitingList.Count == 0)
+                            _lockQueues.Remove(resourceUri.ToString());
+
+                        return null;
+                    }
+                }
             } else {
+                // we got the lock and wern't cancelled or timed out
                 return handleTaskSource.Task.Result;
             }
         }
@@ -111,37 +126,49 @@ namespace Tandem.Managers
         public Task<bool> ReleaseAsync(ILockHandle handle) {
             bool removed = false;
 
+            // try and remove the handle from our lokc list
             lock(_handles) {
                 if (_handles.Contains(handle)) {
-                    // remove
                     _handles.Remove((SlimLockHandle)handle);
+
+                    // we suceeded
                     removed = true;
                 }
             }
 
+            // check if any locks waiting for this lock to be removed
             if (removed) {
-                // check if any locks waiting
                 lock(_lockQueues) {
-                    // get waiting list or create
-                    List<TaskCompletionSource<ILockHandle>> waitingList = null;
+                    while (true) {
+                        // get waiting list or create
+                        List<TaskCompletionSource<ILockHandle>> waitingList = null;
 
-                    // check if we did actually complete
-                    if (_lockQueues.TryGetValue(handle.ResourceURI.ToString(), out waitingList)) {
-                        TaskCompletionSource<ILockHandle> waitingTask = waitingList[0];
-                        waitingList.RemoveAt(0);
+                        // check if we did actually complete
+                        if (_lockQueues.TryGetValue(handle.ResourceURI.ToString(), out waitingList)) {
+                            // get the next lock to fulfill
+                            TaskCompletionSource<ILockHandle> waitingTask = waitingList[0];
+                            waitingList.RemoveAt(0);
 
-                        // create our handle
-                        SlimLockHandle newHandle = new SlimLockHandle(this) {
-                            ResourceURI = handle.ResourceURI,
-                            Token = new LockToken(Guid.NewGuid(), null)
-                        };
+                            // create our handle
+                            SlimLockHandle newHandle = new SlimLockHandle(this) {
+                                ResourceURI = handle.ResourceURI,
+                                Token = new LockToken(Guid.NewGuid(), null)
+                            };
 
-                        _handles.Add(newHandle);
-                        waitingTask.TrySetResult(newHandle);
+                            // add to lock list
+                            _handles.Add(newHandle);
 
-                        // remove
-                        if (waitingList.Count == 0) {
-                            _lockQueues.Remove(handle.ResourceURI.ToString());
+                            // try and signal that the lock has been granted
+                            bool signaledLock = waitingTask.TrySetResult(newHandle);
+
+                            // remove if waiting list is empty
+                            if (waitingList.Count == 0) {
+                                _lockQueues.Remove(handle.ResourceURI.ToString());
+                            }
+
+                            // if we signalled a lock or we're out of locks stop
+                            if (signaledLock || waitingList.Count == 0)
+                                break;
                         }
                     }
                 }
@@ -157,8 +184,9 @@ namespace Tandem.Managers
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The maximum amount of time to wait.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The lock handle or null if the lock could not be obtained.</returns>
-        public Task<ILockHandle> LockAsync(string resourceUri, TimeSpan waitTime = default(TimeSpan)) {
+        public Task<ILockHandle> LockAsync(string resourceUri, TimeSpan waitTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken)) {
             return LockAsync(new Uri(resourceUri), waitTime);
         }
 

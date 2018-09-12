@@ -109,8 +109,9 @@ namespace Tandem.Managers
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The maximum amount of time to wait.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The lock handle or null if the lock could not be obtained.</returns>
-        public async Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan)) {
+        public async Task<ILockHandle> LockAsync(Uri resourceUri, TimeSpan waitTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken)) {
             if (_disposed == 1)
                 throw new ObjectDisposedException("The lock manager has been disposed");
 
@@ -124,6 +125,10 @@ namespace Tandem.Managers
             TimeSpan remainingTime = waitTime;
 
             while (remainingTime >= TimeSpan.Zero) {
+                // check if cancelled
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // try and get the lock
                 bool gotLock = await _database.LockTakeAsync($"tandem.{resourceUri.ToString()}", token.ToString(), _expirySpan);
 
                 if (gotLock) {
@@ -148,7 +153,7 @@ namespace Tandem.Managers
                         return null;
                     } else {
                         // wait 3 seconds until we try again
-                        await Task.Delay(3000);
+                        await Task.Delay(3000, cancellationToken);
                         remainingTime -= TimeSpan.FromSeconds(3);
                     }
                 }
@@ -162,9 +167,10 @@ namespace Tandem.Managers
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>
         /// <param name="waitTime">The maximum amount of time to wait.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The lock handle or null if the lock could not be obtained.</returns>
-        public Task<ILockHandle> LockAsync(string resourceUri, TimeSpan waitTime = default(TimeSpan)) {
-            return LockAsync(new Uri(resourceUri), waitTime);
+        public Task<ILockHandle> LockAsync(string resourceUri, TimeSpan waitTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken)) {
+            return LockAsync(new Uri(resourceUri), waitTime, cancellationToken);
         }
 
         /// <summary>
