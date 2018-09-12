@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.5</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <Authors>Alan Doherty</Authors>
     <Company>Alan Doherty</Company>
     <Description>A Redis powered lock manager for the Tandem distributed locking library</Description>
@@ -12,8 +12,8 @@
     <PackageProjectUrl>https://github.com/alandoherty/tandem-net</PackageProjectUrl>
     <PackageIconUrl>https://s3-eu-west-1.amazonaws.com/assets.alandoherty.co.uk/github/tandem-net-nuget.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>0.0.1.1</AssemblyVersion>
-    <FileVersion>0.0.1.1</FileVersion>
+    <AssemblyVersion>0.0.1.2</AssemblyVersion>
+    <FileVersion>0.0.1.2</FileVersion>
     <RootNamespace>Tandem.Managers</RootNamespace>
   </PropertyGroup>
 
@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
+    <PackageReference Include="StackExchange.Redis" Version="2.0.495" />
   </ItemGroup>
 
   <ItemGroup>
