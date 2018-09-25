@@ -1,6 +1,6 @@
 <div align="center">
 
-[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg?style=flat-square)](https://raw.githubusercontent.com/alandoherty/tandem-net/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/alandoherty/tandem-net/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/alandoherty/tandem-net.svg?style=flat-square)](https://github.com/alandoherty/tandem-net/issues)
 [![GitHub stars](https://img.shields.io/github/stars/alandoherty/tandem-net.svg?style=flat-square)](https://github.com/alandoherty/tandem-net/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/alandoherty/tandem-net.svg?style=flat-square)](https://github.com/alandoherty/tandem-net/network)
