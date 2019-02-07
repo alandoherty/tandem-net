@@ -87,7 +87,7 @@ namespace Tandem.Managers
                 throw new FormatException("The protocol scheme must be tandem");
 
             // query the lock
-            RedisValue value = await _database.LockQueryAsync($"tandem.{resourceUri.ToString()}");
+            RedisValue value = await _database.LockQueryAsync($"tandem.{resourceUri.ToString()}").ConfigureAwait(false);
 
             if (value.IsNull)
                 return default(LockToken);
@@ -129,7 +129,7 @@ namespace Tandem.Managers
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // try and get the lock
-                bool gotLock = await _database.LockTakeAsync($"tandem.{resourceUri.ToString()}", token.ToString(), _expirySpan);
+                bool gotLock = await _database.LockTakeAsync($"tandem.{resourceUri.ToString()}", token.ToString(), _expirySpan).ConfigureAwait(false);
 
                 if (gotLock) {
                     // create handle
@@ -153,7 +153,7 @@ namespace Tandem.Managers
                         return null;
                     } else {
                         // wait 3 seconds until we try again
-                        await Task.Delay(3000, cancellationToken);
+                        await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
                         remainingTime -= TimeSpan.FromSeconds(3);
                     }
                 }
@@ -186,7 +186,7 @@ namespace Tandem.Managers
                 throw new InvalidOperationException("The handle does not belong this lock manager");
 
             // release the lock with the token.
-            bool success = await _database.LockReleaseAsync($"tandem.{handle.ResourceURI.ToString()}", ((RedisLockHandle)handle).Token.ToString());
+            bool success = await _database.LockReleaseAsync($"tandem.{handle.ResourceURI.ToString()}", ((RedisLockHandle)handle).Token.ToString()).ConfigureAwait(false);
 
             lock (_handles) {
                 try {
@@ -215,7 +215,7 @@ namespace Tandem.Managers
         private async Task LockExtender() {
             while(!_disposeCancellation.IsCancellationRequested) {
                 // wait
-                await Task.Delay(_refreshSpan);
+                await Task.Delay(_refreshSpan).ConfigureAwait(false);
 
                 // get expiry time
                 TimeSpan expiryTime = _expirySpan;
@@ -239,9 +239,12 @@ namespace Tandem.Managers
                 Dictionary<Task<bool>, RedisLockHandle> refreshLockHandles = new Dictionary<Task<bool>, RedisLockHandle>();
                 Dictionary<Task<bool>, DateTime> refreshLockTimes = new Dictionary<Task<bool>, DateTime>();
 
+                // create batch
+                IBatch batch = _database.CreateBatch();
+
                 foreach (RedisLockHandle handle in refreshableLocks) {
                     // create task
-                    Task<bool> task = _database.LockExtendAsync($"tandem.{handle.ResourceURI.ToString()}", handle.Token.ToString(), expiryTime);
+                    Task<bool> task = batch.LockExtendAsync($"tandem.{handle.ResourceURI.ToString()}", handle.Token.ToString(), expiryTime);
 
                     // add and map
                     refreshLockTasks.Add(task);
@@ -251,7 +254,7 @@ namespace Tandem.Managers
 
                 // refresh all locks
                 try {
-                    await Task.WhenAll(refreshLockTasks);
+                    await Task.WhenAll(refreshLockTasks).ConfigureAwait(false);
                 } catch (Exception) { }
 
                 // map any sucesses

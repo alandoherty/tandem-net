@@ -84,7 +84,7 @@ namespace Tandem.Managers
 
             try {
                 Task waitDelay = Task.Delay(waitTime, cancellationToken);
-                timedOut = await Task.WhenAny(waitDelay, handleTaskSource.Task) == waitDelay;
+                timedOut = await Task.WhenAny(waitDelay, handleTaskSource.Task).ConfigureAwait(false) == waitDelay;
             } catch (OperationCanceledException) {
                 cancelled = true;
             }

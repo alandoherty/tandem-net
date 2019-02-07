@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>Alan Doherty</Authors>
     <Company>Alan Doherty</Company>
     <Description>A Redis powered lock manager for the Tandem distributed locking library</Description>
@@ -12,8 +12,8 @@
     <PackageProjectUrl>https://github.com/alandoherty/tandem-net</PackageProjectUrl>
     <PackageIconUrl>https://s3-eu-west-1.amazonaws.com/assets.alandoherty.co.uk/github/tandem-net-nuget.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>0.0.1.2</AssemblyVersion>
-    <FileVersion>0.0.1.2</FileVersion>
+    <AssemblyVersion>0.1.3.0</AssemblyVersion>
+    <FileVersion>0.1.3.0</FileVersion>
     <RootNamespace>Tandem.Managers</RootNamespace>
   </PropertyGroup>
 

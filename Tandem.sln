@@ -15,9 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{E3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.RedisLocking", "samples\Example.RedisLocking\Example.RedisLocking.csproj", "{B9F9C56A-CF97-4802-A1D0-8F686C1B392B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tandem", "src\Tandem\Tandem.csproj", "{D5659204-193D-4D5B-A5C3-D5197B35899B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tandem", "src\Tandem\Tandem.csproj", "{D5659204-193D-4D5B-A5C3-D5197B35899B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tandem.Managers.Redis", "src\Tandem.Managers.Redis\Tandem.Managers.Redis.csproj", "{7310AED6-34E1-4A03-8554-8DA35930DA6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tandem.Managers.Redis", "src\Tandem.Managers.Redis\Tandem.Managers.Redis.csproj", "{7310AED6-34E1-4A03-8554-8DA35930DA6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.MassLocking", "samples\Example.MassLocking\Example.MassLocking.csproj", "{13774538-F024-4928-BAE9-722FB7702ADE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{7310AED6-34E1-4A03-8554-8DA35930DA6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7310AED6-34E1-4A03-8554-8DA35930DA6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7310AED6-34E1-4A03-8554-8DA35930DA6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13774538-F024-4928-BAE9-722FB7702ADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13774538-F024-4928-BAE9-722FB7702ADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13774538-F024-4928-BAE9-722FB7702ADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13774538-F024-4928-BAE9-722FB7702ADE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +54,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{16077DC1-AF0A-4F74-A2EB-D671C0FF602F} = {E3DA4419-59BC-4DF1-B38E-CBE960CC5ED8}
 		{B9F9C56A-CF97-4802-A1D0-8F686C1B392B} = {E3DA4419-59BC-4DF1-B38E-CBE960CC5ED8}
+		{13774538-F024-4928-BAE9-722FB7702ADE} = {E3DA4419-59BC-4DF1-B38E-CBE960CC5ED8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {22315A65-0A8A-4D5B-939B-F8D61E700684}
