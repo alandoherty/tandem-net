@@ -29,6 +29,17 @@ namespace Tandem.Managers
                 throw new InvalidOperationException("The expiry time for process locks is infinite");
             }
         }
+
+        /// <summary>
+        /// Gets or sets the owner.
+        /// </summary>
+        public string Owner {
+            get {
+                throw new NotSupportedException();
+            } set {
+                throw new NotSupportedException();
+            }
+        }
         #endregion
 
         #region Methods

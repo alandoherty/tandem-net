@@ -17,6 +17,11 @@ namespace Tandem
         TimeSpan ExpirySpan { get; set; }
 
         /// <summary>
+        /// Gets or sets the owner identifier.
+        /// </summary>
+        string Owner { get; set; }
+
+        /// <summary>
         /// Locks the specified resource.
         /// </summary>
         /// <param name="resourceUri">The resource URI.</param>

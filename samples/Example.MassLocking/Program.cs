@@ -34,19 +34,7 @@ namespace Example.MassLocking
             stopwatch.Stop();
             Console.WriteLine($"Added 1024 locks in {stopwatch.Elapsed.TotalMilliseconds}ms");
 
-            Random r = new Random();
-
-            while(lockHandles.Count > 0) {
-                // get a random lock from the list and remove it
-                int index = r.Next(0, lockHandles.Count);
-                ILockHandle l = lockHandles[index];
-                lockHandles.RemoveAt(index);
-
-                // release it
-                l.Dispose();
-
-                await Task.Delay(50);
-            }
+            await Task.Delay(Timeout.InfiniteTimeSpan);
         }
     }
 }

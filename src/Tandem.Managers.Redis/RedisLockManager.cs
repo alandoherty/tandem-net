@@ -42,6 +42,17 @@ namespace Tandem.Managers
         #endregion
 
         /// <summary>
+        /// Gets or sets the owner.
+        /// </summary>
+        public string Owner {
+            get {
+                return _owner;
+            } set {
+                _owner = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the default expiry for locks.
         /// </summary>
         public TimeSpan ExpirySpan {
@@ -238,13 +249,10 @@ namespace Tandem.Managers
                 List<Task<bool>> refreshLockTasks = new List<Task<bool>>(refreshableLocks.Length);
                 Dictionary<Task<bool>, RedisLockHandle> refreshLockHandles = new Dictionary<Task<bool>, RedisLockHandle>();
                 Dictionary<Task<bool>, DateTime> refreshLockTimes = new Dictionary<Task<bool>, DateTime>();
-
-                // create batch
-                IBatch batch = _database.CreateBatch();
-
+                
                 foreach (RedisLockHandle handle in refreshableLocks) {
                     // create task
-                    Task<bool> task = batch.LockExtendAsync($"tandem.{handle.ResourceURI.ToString()}", handle.Token.ToString(), expiryTime);
+                    Task<bool> task = _database.LockExtendAsync($"tandem.{handle.ResourceURI.ToString()}", handle.Token.ToString(), expiryTime);
 
                     // add and map
                     refreshLockTasks.Add(task);
