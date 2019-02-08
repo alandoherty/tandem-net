@@ -35,9 +35,8 @@ namespace Tandem.Managers
         /// </summary>
         public string Owner {
             get {
-                throw new NotSupportedException();
+                return string.Empty;
             } set {
-                throw new NotSupportedException();
             }
         }
         #endregion
